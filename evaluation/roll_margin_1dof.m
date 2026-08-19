@@ -17,7 +17,6 @@
 %   Ldelta : 舵効き       [Nm/rad]      ← 正。舵を切ると回る
 %
 % Lp と Ldelta は動圧に比例するので、設計点 roll_design_qbar での値を使う。
-% 6DOF 側は動圧正規化が入っているため、設計点での設計がそのまま成立する。
 
 Ixx    = roll_design_Ixx;
 Lp     = roll_Lp;
@@ -43,9 +42,9 @@ G_p   = 1 / (sensor_gyroTau    * s + 1);   % レートジャイロ
 G_phi = 1 / (sensor_attitudeTau * s + 1);  % 姿勢センサ
 
 %% 3) 制御則
-% 内側: ロールレートの PI 制御（Kd = 0）
+% 内側: ロールレートの P 制御
 % 外側: ロール角の P 制御
-C_in  = controller_inner_Kp + controller_inner_Ki / s;
+C_in  = controller_inner_Kp;
 K_out = controller_outer_Kp;
 
 %% 4) 開ループ伝達関数
@@ -105,11 +104,10 @@ nexttile;
 step(T_phi, 5); grid on; title("ロール角のステップ応答");
 
 %% 8) ゲインを変えて余裕がどう動くか
-% 教材用: 内側ゲインを振って位相余裕の変化を見る。
 fprintf("\n--- 内側ゲインを振ったときのフィン指令ループ ---\n");
 fprintf("  %-10s %8s %9s %11s\n", "inner_Kp", "GM[dB]", "PM[deg]", "wc[rad/s]");
 for kp = controller_inner_Kp * [0.5 1 2 4]
-    Ck = kp + controller_inner_Ki / s;
+    Ck = kp;
     Lk = Ck * A * P_p * (K_out * G_phi * P_phi + G_p);
     [gm, pm, ~, wc] = margin(Lk);
     fprintf("  %-10.3f %8.2f %9.2f %11.3f\n", kp, 20*log10(gm), pm, wc);
