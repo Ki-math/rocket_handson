@@ -174,7 +174,8 @@ if numel(tSource) < 2
     value = repmat(value(:, 1), 1, numel(tRef));
     return
 end
-value = interp1(tSource, value.', tRef, "linear", "extrap").';
+tClamped = min(max(tRef, tSource(1)), tSource(end));
+value = interp1(tSource, value.', tClamped, "linear").';
 end
 
 
